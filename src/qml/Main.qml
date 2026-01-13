@@ -575,6 +575,45 @@ Kirigami.ApplicationWindow {
                         Controls.ToolTip.visible: hovered
                         Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                     }
+
+                    // Spacer between playback controls and mode buttons
+                    Item {
+                        Layout.preferredWidth: Kirigami.Units.largeSpacing
+                    }
+
+                    // Shuffle Button
+                    Controls.ToolButton {
+                        icon.name: "media-playlist-shuffle"
+                        checkable: true
+                        checked: shuffleEnabled
+                        onCheckedChanged: shuffleEnabled = checked
+
+                        Controls.ToolTip.text: shuffleEnabled ? i18n("Shuffle: On") : i18n("Shuffle: Off")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    }
+
+                    // Repeat Button
+                    Controls.ToolButton {
+                        icon.name: repeatMode === 1 ? "media-playlist-repeat-song" : "media-playlist-repeat"
+                        checkable: true
+                        checked: repeatMode !== 0
+                        opacity: repeatMode === 0 ? 0.5 : 1.0
+
+                        onClicked: {
+                            // Cycle: Off(0) -> All(2) -> One(1) -> Off(0)
+                            if (repeatMode === 0)
+                                repeatMode = 2;
+                            else if (repeatMode === 2)
+                                repeatMode = 1;
+                            else
+                                repeatMode = 0;
+                        }
+
+                        Controls.ToolTip.text: repeatMode === 0 ? i18n("Repeat: Off") : repeatMode === 1 ? i18n("Repeat: One") : i18n("Repeat: All")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    }
                 }
             }
         }
