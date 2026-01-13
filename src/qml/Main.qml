@@ -218,9 +218,30 @@ Kirigami.ApplicationWindow {
         audioOutput: AudioOutput {}
 
         onPlaybackStateChanged: {
-            // Stop and reset when track ends
+            // Auto-play next track when current track ends naturally
             if (mediaPlayer.playbackState === MediaPlayer.StoppedState && mediaPlayer.position >= mediaPlayer.duration - 100 && mediaPlayer.duration > 0) {
-                mediaPlayer.position = 0;
+                // Only auto-advance if playlist has tracks
+                if (playlistModel.count > 0) {
+                    // Repeat One: replay same track
+                    if (repeatMode === 1) {
+                        mediaPlayer.position = 0;
+                        mediaPlayer.play();
+                        return;
+                    }
+
+                    // Repeat Off/All: get next track (handles wrapping for repeat all)
+                    var nextIdx = playlistModel.nextIndex(shuffleEnabled, repeatMode);
+                    if (nextIdx >= 0) {
+                        playlistModel.setCurrentIndex(nextIdx);
+                        playTrack(playlistModel.urlAt(nextIdx));
+                    } else {
+                        // End of playlist (repeat off) - reset position
+                        mediaPlayer.position = 0;
+                    }
+                } else {
+                    // No playlist - just reset position
+                    mediaPlayer.position = 0;
+                }
             }
         }
 
