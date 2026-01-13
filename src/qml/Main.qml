@@ -147,6 +147,7 @@ Kirigami.ApplicationWindow {
                 model: playlistModel
                 clip: true
                 reuseItems: true
+                visible: playlistModel.count > 0
 
                 delegate: Kirigami.SwipeListItem {
                     id: trackDelegate
@@ -250,6 +251,40 @@ Kirigami.ApplicationWindow {
                         }
                     ]
                 }
+            }
+
+            // Empty state when no tracks in playlist
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                visible: playlistModel.count === 0
+                spacing: Kirigami.Units.largeSpacing
+
+                Item { Layout.fillHeight: true }
+
+                Kirigami.Icon {
+                    Layout.alignment: Qt.AlignHCenter
+                    source: "view-media-playlist"
+                    width: 64
+                    height: 64
+                    opacity: 0.5
+                }
+
+                Kirigami.Heading {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: i18n("No tracks in playlist")
+                    level: 3
+                    opacity: 0.7
+                }
+
+                Controls.Button {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: i18n("Add Files")
+                    icon.name: "list-add"
+                    onClicked: fileDialog.open()
+                }
+
+                Item { Layout.fillHeight: true }
             }
         }
     }
