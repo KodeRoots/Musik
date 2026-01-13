@@ -126,18 +126,69 @@ Kirigami.ApplicationWindow {
                 Layout.fillWidth: true
             }
 
-            // ListView placeholder (will be populated in TASK_010)
+            // Playlist ListView with track delegates
             ListView {
                 id: playlistView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 model: playlistModel
                 clip: true
+                reuseItems: true
 
-                // Placeholder delegate until TASK_010
-                delegate: Controls.ItemDelegate {
-                    width: playlistView.width
-                    text: model.title || i18n("Unknown Title")
+                delegate: Kirigami.SwipeListItem {
+                    id: trackDelegate
+                    width: ListView.view.width
+                    highlighted: index === playlistModel.currentIndex
+
+                    contentItem: RowLayout {
+                        spacing: Kirigami.Units.smallSpacing
+
+                        // Album art thumbnail
+                        Rectangle {
+                            Layout.preferredWidth: 48
+                            Layout.preferredHeight: 48
+                            color: Kirigami.Theme.backgroundColor
+                            radius: 4
+
+                            Image {
+                                anchors.fill: parent
+                                anchors.margins: 1
+                                source: model.albumArt || ""
+                                fillMode: Image.PreserveAspectCrop
+                                visible: model.albumArt !== ""
+                            }
+
+                            Kirigami.Icon {
+                                anchors.centerIn: parent
+                                width: 24
+                                height: 24
+                                source: "media-optical-audio"
+                                visible: model.albumArt === ""
+                                opacity: 0.5
+                            }
+                        }
+
+                        // Track info
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+
+                            Controls.Label {
+                                Layout.fillWidth: true
+                                text: model.title || i18n("Unknown Title")
+                                elide: Text.ElideRight
+                                font.bold: trackDelegate.highlighted
+                            }
+
+                            Controls.Label {
+                                Layout.fillWidth: true
+                                text: model.artist || i18n("Unknown Artist")
+                                elide: Text.ElideRight
+                                color: Kirigami.Theme.disabledTextColor
+                                font.pointSize: Kirigami.Theme.smallFont.pointSize
+                            }
+                        }
+                    }
                 }
             }
         }
