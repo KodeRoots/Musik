@@ -378,11 +378,27 @@ Kirigami.ApplicationWindow {
 
             onDropped: function (drop) {
                 if (drop.hasUrls && drop.urls.length > 0) {
-                    var fileUrl = drop.urls[0];
-                    if (isAudioFile(fileUrl)) {
-                        openFile(fileUrl);
+                    var wasEmpty = (playlistModel.count === 0);
+                    var audioUrls = [];
+
+                    // Filter for audio files
+                    for (var i = 0; i < drop.urls.length; i++) {
+                        if (isAudioFile(drop.urls[i])) {
+                            audioUrls.push(drop.urls[i]);
+                        }
+                    }
+
+                    if (audioUrls.length > 0) {
+                        // Add all audio files to playlist
+                        playlistModel.addTracks(audioUrls);
+
+                        // If playlist was empty, auto-play the first track
+                        if (wasEmpty && playlistModel.count > 0) {
+                            playlistModel.setCurrentIndex(0);
+                            playTrack(playlistModel.urlAt(0));
+                        }
                     } else {
-                        showError(i18n("Unsupported file format"));
+                        showError(i18n("No supported audio files found"));
                     }
                 }
             }
