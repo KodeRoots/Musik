@@ -10,6 +10,8 @@ target_sources(musik
     main.cpp
     audioplayer.cpp
     audioplayer.h
+    playlistmodel.cpp
+    playlistmodel.h
 )
 
 ecm_target_qml_sources(musik
