@@ -207,6 +207,48 @@ Kirigami.ApplicationWindow {
                             }
                         }
                     }
+
+                    actions: [
+                        Kirigami.Action {
+                            icon.name: "list-remove"
+                            text: i18n("Remove")
+                            onTriggered: {
+                                var removingCurrent = (index === playlistModel.currentIndex);
+                                var wasPlaying = (mediaPlayer.playbackState === MediaPlayer.PlayingState);
+                                var nextUrl = "";
+
+                                // If removing current track, prepare next track
+                                if (removingCurrent && playlistModel.count > 1) {
+                                    var nextIdx = (index + 1 < playlistModel.count) ? index + 1 : index - 1;
+                                    nextUrl = playlistModel.urlAt(nextIdx);
+                                }
+
+                                // Remove the track
+                                playlistModel.removeTrack(index);
+
+                                // Handle playback after removal
+                                if (removingCurrent) {
+                                    if (playlistModel.count > 0 && nextUrl !== "") {
+                                        // Play next track if we were playing
+                                        if (wasPlaying) {
+                                            playTrack(nextUrl);
+                                        } else {
+                                            // Just load without playing
+                                            root.currentTrackUrl = nextUrl;
+                                            audioPlayer.loadTrack(nextUrl);
+                                        }
+                                    } else {
+                                        // Playlist is now empty - stop playback
+                                        mediaPlayer.stop();
+                                        root.currentTrackUrl = "";
+                                        root.currentTrackTitle = "";
+                                        root.currentTrackArtist = "";
+                                        root.currentAlbumArt = "";
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 }
             }
         }
