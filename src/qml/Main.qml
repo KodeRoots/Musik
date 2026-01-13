@@ -297,11 +297,21 @@ Kirigami.ApplicationWindow {
     // File dialog for opening audio files
     FileDialog {
         id: fileDialog
-        title: i18n("Open Audio File")
-        fileMode: FileDialog.OpenFile
+        title: i18n("Open Audio Files")
+        fileMode: FileDialog.OpenFiles
         nameFilters: [i18n("Audio Files") + " (*.mp3 *.flac *.ogg *.wav *.m4a *.aac *.wma *.opus)", i18n("All Files") + " (*)"]
         onAccepted: {
-            openFile(selectedFile);
+            var wasEmpty = (playlistModel.count === 0);
+            var wasPlaying = (mediaPlayer.playbackState === MediaPlayer.PlayingState);
+
+            // Add all selected files to playlist
+            playlistModel.addTracks(selectedFiles);
+
+            // If playlist was empty, auto-play the first track
+            if (wasEmpty && playlistModel.count > 0) {
+                playlistModel.setCurrentIndex(0);
+                playTrack(playlistModel.urlAt(0));
+            }
         }
     }
 
