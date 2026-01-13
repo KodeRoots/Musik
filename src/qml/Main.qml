@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as Controls
 import QtQuick.Dialogs
+import QtQuick.Effects
 import QtMultimedia
 import org.kde.kirigami as Kirigami
 import io.github.denysmb.musik
@@ -122,6 +123,33 @@ Kirigami.ApplicationWindow {
                 onTriggered: fileDialog.open()
             }
         ]
+
+        // Blurred album art background
+        Item {
+            id: backgroundContainer
+            anchors.fill: parent
+            visible: audioPlayer.albumArtPath !== ""
+            z: -1
+
+            Image {
+                id: backgroundImage
+                anchors.centerIn: parent
+                width: Math.max(parent.width, parent.height)
+                height: width
+                source: audioPlayer.albumArtPath
+                fillMode: Image.PreserveAspectCrop
+                visible: false
+            }
+
+            MultiEffect {
+                anchors.fill: parent
+                source: backgroundImage
+                blurEnabled: true
+                blurMax: 64
+                blur: 1.0
+                opacity: 0.5
+            }
+        }
 
         // Drag and drop area
         DropArea {
