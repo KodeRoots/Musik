@@ -670,17 +670,17 @@ Kirigami.ApplicationWindow {
                     }
 
                     // Stop Button
-                    Controls.ToolButton {
-                        icon.name: "media-playback-stop"
-                        onClicked: {
-                            mediaPlayer.stop();
-                            mediaPlayer.position = 0;
-                        }
+                    // Controls.ToolButton {
+                    //     icon.name: "media-playback-stop"
+                    //     onClicked: {
+                    //         mediaPlayer.stop();
+                    //         mediaPlayer.position = 0;
+                    //     }
 
-                        Controls.ToolTip.text: i18n("Stop")
-                        Controls.ToolTip.visible: hovered
-                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
-                    }
+                    //     Controls.ToolTip.text: i18n("Stop")
+                    //     Controls.ToolTip.visible: hovered
+                    //     Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    // }
 
                     // Next Track Button
                     Controls.ToolButton {
