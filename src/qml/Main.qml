@@ -126,7 +126,12 @@ Kirigami.ApplicationWindow {
                 Controls.ToolButton {
                     icon.name: "edit-clear-all"
                     text: i18n("Clear playlist")
-                    onClicked: playlistModel.clear()
+                    onClicked: {
+                        playlistModel.clear();
+                        mediaPlayer.stop();
+                        mediaPlayer.source = "";
+                        audioPlayer.clearMetadata();
+                    }
                     enabled: playlistModel.count > 0
 
                     Controls.ToolTip.text: text
