@@ -262,7 +262,7 @@ Kirigami.ApplicationWindow {
             Controls.Button {
                 Layout.fillWidth: true
                 Layout.margins: Kirigami.Units.largeSpacing
-                text: i18n("Add Files")
+                text: i18n("Add Tracks")
                 icon.name: "list-add"
                 visible: playlistModel.count > 0
                 onClicked: {
@@ -300,8 +300,8 @@ Kirigami.ApplicationWindow {
 
                 Controls.Button {
                     Layout.alignment: Qt.AlignHCenter
-                    text: i18n("Add Files")
-                    icon.name: "list-add"
+                    text: i18n("Open")
+                    icon.name: "document-open"
                     onClicked: fileDialog.open()
                 }
 
