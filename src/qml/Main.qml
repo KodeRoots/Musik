@@ -624,10 +624,22 @@ Kirigami.ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Kirigami.Units.smallSpacing
 
+                    // Shuffle Button
+                    Controls.ToolButton {
+                        icon.name: "media-playlist-shuffle"
+                        checkable: true
+                        checked: shuffleEnabled
+                        onCheckedChanged: shuffleEnabled = checked
+
+                        Controls.ToolTip.text: shuffleEnabled ? i18n("Shuffle: On") : i18n("Shuffle: Off")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    }
+
                     // Previous Track Button
                     Controls.ToolButton {
                         icon.name: "media-skip-backward"
-                        enabled: playlistModel.count > 0
+                        enabled: playlistModel.count > 1
                         onClicked: {
                             var prevIdx = playlistModel.previousIndex();
                             if (prevIdx >= 0) {
@@ -642,9 +654,8 @@ Kirigami.ApplicationWindow {
                     }
 
                     // Play/Pause Button
-                    Controls.Button {
+                    Controls.ToolButton {
                         icon.name: mediaPlayer.playbackState === MediaPlayer.PlayingState ? "media-playback-pause" : "media-playback-start"
-                        text: mediaPlayer.playbackState === MediaPlayer.PlayingState ? i18n("Pause") : i18n("Play")
                         onClicked: {
                             if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
                                 mediaPlayer.pause();
@@ -652,22 +663,29 @@ Kirigami.ApplicationWindow {
                                 mediaPlayer.play();
                             }
                         }
+
+                        Controls.ToolTip.text: mediaPlayer.playbackState === MediaPlayer.PlayingState ? i18n("Pause") : i18n("Play")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                     }
 
                     // Stop Button
-                    Controls.Button {
+                    Controls.ToolButton {
                         icon.name: "media-playback-stop"
-                        text: i18n("Stop")
                         onClicked: {
                             mediaPlayer.stop();
                             mediaPlayer.position = 0;
                         }
+
+                        Controls.ToolTip.text: i18n("Stop")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                     }
 
                     // Next Track Button
                     Controls.ToolButton {
                         icon.name: "media-skip-forward"
-                        enabled: playlistModel.count > 0
+                        enabled: playlistModel.count > 1
                         onClicked: {
                             var nextIdx = playlistModel.nextIndex(shuffleEnabled, repeatMode);
                             if (nextIdx >= 0) {
@@ -677,23 +695,6 @@ Kirigami.ApplicationWindow {
                         }
 
                         Controls.ToolTip.text: i18n("Next track")
-                        Controls.ToolTip.visible: hovered
-                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
-                    }
-
-                    // Spacer between playback controls and mode buttons
-                    Item {
-                        Layout.preferredWidth: Kirigami.Units.largeSpacing
-                    }
-
-                    // Shuffle Button
-                    Controls.ToolButton {
-                        icon.name: "media-playlist-shuffle"
-                        checkable: true
-                        checked: shuffleEnabled
-                        onCheckedChanged: shuffleEnabled = checked
-
-                        Controls.ToolTip.text: shuffleEnabled ? i18n("Shuffle: On") : i18n("Shuffle: Off")
                         Controls.ToolTip.visible: hovered
                         Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                     }
