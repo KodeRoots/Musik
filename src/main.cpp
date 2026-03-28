@@ -8,10 +8,12 @@
 #include <QQmlEngine>
 
 #include <KLocalizedContext>
+#include <QCoreApplication>
 
 int main(int argc, char *argv[])
 {
     KIconTheme::initTheme();
+    qputenv("QT_MEDIA_BACKEND", "gstreamer");
     QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain("musik");
     QApplication::setApplicationName(QStringLiteral("Musik"));
