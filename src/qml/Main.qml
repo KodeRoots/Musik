@@ -22,6 +22,150 @@ Kirigami.ApplicationWindow {
     minimumHeight: 500
     maximumHeight: 500
 
+    // Keyboard Shortcuts
+    Shortcut {
+        sequence: StandardKey.MediaPlay
+        onActivated: {
+            if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
+                mediaPlayer.pause();
+            } else {
+                mediaPlayer.play();
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Space"
+        onActivated: {
+            if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
+                mediaPlayer.pause();
+            } else {
+                mediaPlayer.play();
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.MediaNext
+        onActivated: {
+            var nextIdx = playlistModel.nextIndex(shuffleEnabled, repeatMode);
+            if (nextIdx >= 0) {
+                playlistModel.currentIndex = nextIdx;
+                playTrack(playlistModel.urlAt(nextIdx));
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+Right"
+        onActivated: {
+            var nextIdx = playlistModel.nextIndex(shuffleEnabled, repeatMode);
+            if (nextIdx >= 0) {
+                playlistModel.currentIndex = nextIdx;
+                playTrack(playlistModel.urlAt(nextIdx));
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.MediaPrevious
+        onActivated: {
+            var prevIdx = playlistModel.previousIndex();
+            if (prevIdx >= 0) {
+                playlistModel.currentIndex = prevIdx;
+                playTrack(playlistModel.urlAt(prevIdx));
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+Left"
+        onActivated: {
+            var prevIdx = playlistModel.previousIndex();
+            if (prevIdx >= 0) {
+                playlistModel.currentIndex = prevIdx;
+                playTrack(playlistModel.urlAt(prevIdx));
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.MediaVolumeUp
+        onActivated: {
+            Settings.volume = Math.min(100, Settings.volume + 5);
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+Up"
+        onActivated: {
+            Settings.volume = Math.min(100, Settings.volume + 5);
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.MediaVolumeDown
+        onActivated: {
+            Settings.volume = Math.max(0, Settings.volume - 5);
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+Down"
+        onActivated: {
+            Settings.volume = Math.max(0, Settings.volume - 5);
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.MediaToggleMute
+        onActivated: {
+            Settings.muted = !Settings.muted;
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+M"
+        onActivated: {
+            Settings.muted = !Settings.muted;
+        }
+    }
+
+    Shortcut {
+        sequence: StandardKey.Open
+        onActivated: {
+            shouldAutoPlay = true;
+            fileDialog.open();
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+P"
+        onActivated: {
+            if (playlistDrawer.visible) {
+                playlistDrawer.close();
+            } else {
+                playlistDrawer.open();
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Shift+Right"
+        onActivated: {
+            if (mediaPlayer.duration > 0) {
+                mediaPlayer.position = Math.min(mediaPlayer.duration, mediaPlayer.position + 10000);
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Shift+Left"
+        onActivated: {
+            mediaPlayer.position = Math.max(0, mediaPlayer.position - 10000);
+        }
+    }
+
     // Track if a file is loaded
     readonly property bool hasFile: mediaPlayer.source.toString() !== ""
 
