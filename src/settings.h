@@ -18,6 +18,7 @@ class Settings : public QObject
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
     Q_PROPERTY(bool muted READ muted WRITE setMuted NOTIFY mutedChanged)
     Q_PROPERTY(bool showVolumeControls READ showVolumeControls WRITE setShowVolumeControls NOTIFY showVolumeControlsChanged)
+    Q_PROPERTY(bool miniMode READ miniMode WRITE setMiniMode NOTIFY miniModeChanged)
 
 public:
     explicit Settings(QObject *parent = nullptr);
@@ -31,6 +32,9 @@ public:
     bool showVolumeControls() const;
     void setShowVolumeControls(bool show);
 
+    bool miniMode() const;
+    void setMiniMode(bool miniMode);
+
     static Settings *create(QQmlEngine *, QJSEngine *)
     {
         return new Settings;
@@ -40,6 +44,7 @@ Q_SIGNALS:
     void volumeChanged();
     void mutedChanged();
     void showVolumeControlsChanged();
+    void miniModeChanged();
 
 private:
     void loadSettings();
@@ -49,6 +54,7 @@ private:
     int m_volume = 70;
     bool m_muted = false;
     bool m_showVolumeControls = true;
+    bool m_miniMode = false;
 };
 
 #endif // SETTINGS_H

@@ -59,12 +59,27 @@ void Settings::setShowVolumeControls(bool show)
     }
 }
 
+bool Settings::miniMode() const
+{
+    return m_miniMode;
+}
+
+void Settings::setMiniMode(bool miniMode)
+{
+    if (m_miniMode != miniMode) {
+        m_miniMode = miniMode;
+        Q_EMIT miniModeChanged();
+        saveSettings();
+    }
+}
+
 void Settings::loadSettings()
 {
     KConfigGroup group = m_config->group(QStringLiteral("Audio"));
     m_volume = group.readEntry(QStringLiteral("Volume"), 70);
     m_muted = group.readEntry(QStringLiteral("Muted"), false);
     m_showVolumeControls = group.readEntry(QStringLiteral("ShowVolumeControls"), true);
+    m_miniMode = group.readEntry(QStringLiteral("MiniMode"), false);
 }
 
 void Settings::saveSettings()
@@ -73,5 +88,6 @@ void Settings::saveSettings()
     group.writeEntry(QStringLiteral("Volume"), m_volume);
     group.writeEntry(QStringLiteral("Muted"), m_muted);
     group.writeEntry(QStringLiteral("ShowVolumeControls"), m_showVolumeControls);
+    group.writeEntry(QStringLiteral("MiniMode"), m_miniMode);
     group.sync();
 }

@@ -16,11 +16,11 @@ Kirigami.ApplicationWindow {
 
     title: i18nc("@title:window", "Musik")
     width: 400
-    height: Settings.showVolumeControls ? 550 : 510
+    height: miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510)
     minimumWidth: 400
     maximumWidth: 400
-    minimumHeight: Settings.showVolumeControls ? 550 : 510
-    maximumHeight: Settings.showVolumeControls ? 550 : 510
+    minimumHeight: miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510)
+    maximumHeight: miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510)
 
     // Keyboard Shortcuts
     Shortcut {
@@ -267,10 +267,18 @@ Kirigami.ApplicationWindow {
     }
 
     property bool showVolumeControls: Settings.showVolumeControls
+    property bool miniMode: Settings.miniMode
 
     globalDrawer: Kirigami.GlobalDrawer {
         isMenu: true
         actions: [
+            Kirigami.Action {
+                text: i18nc("@action", "Mini mode")
+                icon.name: "view-restore"
+                checkable: true
+                checked: Settings.miniMode
+                onToggled: Settings.miniMode = checked
+            },
             Kirigami.Action {
                 text: i18nc("@action", "Show volume controls")
                 icon.name: "audio-volume-high"
@@ -731,6 +739,7 @@ Kirigami.ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: 280
                     Layout.preferredHeight: 280
+                    visible: !miniMode
 
                     Rectangle {
                         anchors.fill: parent
@@ -772,7 +781,7 @@ Kirigami.ApplicationWindow {
                         Layout.fillWidth: true
                         text: audioPlayer.hasMetadata ? audioPlayer.title : i18n("Unknown Title")
                         font.bold: true
-                        font.pointSize: Kirigami.Theme.defaultFont.pointSize * 1.2
+                        font.pointSize: miniMode ? Kirigami.Theme.defaultFont.pointSize : Kirigami.Theme.defaultFont.pointSize * 1.2
                         horizontalAlignment: Text.AlignHCenter
                         elide: Text.ElideRight
                     }
@@ -797,6 +806,7 @@ Kirigami.ApplicationWindow {
                 // Spacer
                 Item {
                     Layout.fillHeight: true
+                    Layout.preferredHeight: miniMode ? 0 : undefined
                 }
 
                 // Seek Bar with Time Display
@@ -956,12 +966,12 @@ Kirigami.ApplicationWindow {
                     }
                 }
 
-                // Volume Controls
+                // Volume Controls (horizontal, normal mode)
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillWidth: true
                     spacing: Kirigami.Units.smallSpacing
-                    visible: root.showVolumeControls
+                    visible: root.showVolumeControls && !miniMode
 
                     // Mute Button
                     Controls.ToolButton {
