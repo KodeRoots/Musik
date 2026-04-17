@@ -16,11 +16,12 @@ Kirigami.ApplicationWindow {
 
     title: i18nc("@title:window", "Musik")
     width: 400
-    height: miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510)
+    height: (miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510))
     minimumWidth: 400
     maximumWidth: 400
-    minimumHeight: miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510)
-    maximumHeight: miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510)
+    minimumHeight: (miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510))
+    maximumHeight: (miniMode ? 220 : (Settings.showVolumeControls ? 550 : 510))
+    flags: Settings.noHeaderMode ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window
 
     // Keyboard Shortcuts
     Shortcut {
@@ -166,6 +167,17 @@ Kirigami.ApplicationWindow {
         }
     }
 
+    Shortcut {
+        sequence: "Ctrl+H"
+        onActivated: {
+            Settings.noHeaderMode = !Settings.noHeaderMode;
+            root.visible = false;
+            Qt.callLater(function () {
+                root.visible = true;
+            });
+        }
+    }
+
     // Track if a file is loaded
     readonly property bool hasFile: mediaPlayer.source.toString() !== ""
 
@@ -268,6 +280,7 @@ Kirigami.ApplicationWindow {
 
     property bool showVolumeControls: Settings.showVolumeControls
     property bool miniMode: Settings.miniMode
+    property bool noHeaderMode: Settings.noHeaderMode
 
     globalDrawer: Kirigami.GlobalDrawer {
         isMenu: true
@@ -280,11 +293,24 @@ Kirigami.ApplicationWindow {
                 onToggled: Settings.miniMode = checked
             },
             Kirigami.Action {
+                text: i18nc("@action", "No header mode")
+                icon.name: "view-fullscreen"
+                checkable: true
+                checked: Settings.noHeaderMode
+                onToggled: {
+                    Settings.noHeaderMode = checked;
+                    root.visible = false;
+                    Qt.callLater(function () {
+                        root.visible = true;
+                    });
+                }
+            },
+            Kirigami.Action {
                 text: i18nc("@action", "Show volume controls")
                 icon.name: "audio-volume-high"
                 checkable: true
-                checked: Settings.showVolumeControls && !Settings.miniMode
-                enabled: !Settings.miniMode
+                checked: Settings.showVolumeControls && !Settings.miniMode && !Settings.noHeaderMode
+                enabled: !Settings.miniMode && !Settings.noHeaderMode
                 onToggled: Settings.showVolumeControls = checked
             },
             Kirigami.Action {
@@ -590,8 +616,9 @@ Kirigami.ApplicationWindow {
     pageStack.initialPage: Kirigami.Page {
         id: mainPage
 
-        title: i18nc("@title:window", "Musik")
+        title: noHeaderMode ? "" : i18nc("@title:window", "Musik")
         padding: Kirigami.Units.largeSpacing
+        globalToolBarStyle: noHeaderMode ? Kirigami.ApplicationHeaderStyle.None : Kirigami.ApplicationHeaderStyle.ToolBar
 
         // Open action in the header toolbar
         actions: [
@@ -635,6 +662,18 @@ Kirigami.ApplicationWindow {
                 blurMax: 64
                 blur: 1.0
                 opacity: 0.5
+            }
+        }
+
+        // Drag-to-move for frameless window
+        MouseArea {
+            anchors.fill: parent
+            enabled: Settings.noHeaderMode
+            visible: Settings.noHeaderMode
+            acceptedButtons: Qt.LeftButton
+            z: -1
+            onPressed: {
+                root.startSystemMove();
             }
         }
 
@@ -961,9 +1000,9 @@ Kirigami.ApplicationWindow {
                                 repeatMode = 0;
                         }
 
-                    Controls.ToolTip.text: repeatMode === 0 ? i18n("Repeat: Off") : repeatMode === 1 ? i18n("Repeat: One") : i18n("Repeat: All")
-                    Controls.ToolTip.visible: hovered
-                    Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                        Controls.ToolTip.text: repeatMode === 0 ? i18n("Repeat: Off") : repeatMode === 1 ? i18n("Repeat: One") : i18n("Repeat: All")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                     }
                 }
 
