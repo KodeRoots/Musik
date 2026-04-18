@@ -620,6 +620,16 @@ Kirigami.ApplicationWindow {
         padding: Kirigami.Units.largeSpacing
         globalToolBarStyle: noHeaderMode ? Kirigami.ApplicationHeaderStyle.None : Kirigami.ApplicationHeaderStyle.ToolBar
 
+        // Border around the main content for no header mode
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: noHeaderMode ? Kirigami.Units.smallSpacing : 0
+            color: "transparent"
+            border.width: noHeaderMode ? 1 : 0
+            border.color: Kirigami.Theme.textColor
+            z: -1
+        }
+
         // Open action in the header toolbar
         actions: [
             Kirigami.Action {
