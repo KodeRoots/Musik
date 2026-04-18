@@ -68,6 +68,11 @@ Kirigami.ApplicationWindow {
                 fileDialog.open();
             }
         }
+
+        Controls.MenuItem {
+            text: i18nc("@action", "Close")
+            onTriggered: Qt.quit()
+        }
     }
 
     // Keyboard Shortcuts
