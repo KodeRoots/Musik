@@ -915,7 +915,6 @@ Kirigami.ApplicationWindow {
                                 Layout.preferredWidth: 40
                                 Layout.preferredHeight: 40
                                 color: Kirigami.Theme.backgroundColor
-                                radius: Kirigami.Units.smallSpacing
 
                                 Image {
                                     anchors.fill: parent

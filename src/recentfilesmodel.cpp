@@ -8,7 +8,13 @@
 
 #include <QFile>
 #include <QFileInfo>
+#include <QStandardPaths>
+#include <QTemporaryFile>
 #include <QDebug>
+
+#include <fileref.h>
+#include <tag.h>
+#include <tpropertymap.h>
 
 RecentFilesModel::RecentFilesModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -19,6 +25,7 @@ RecentFilesModel::RecentFilesModel(QObject *parent)
 RecentFilesModel::~RecentFilesModel()
 {
     saveToConfig();
+    cleanupTempFiles();
 }
 
 int RecentFilesModel::rowCount(const QModelIndex &parent) const
@@ -93,7 +100,7 @@ void RecentFilesModel::addFile(const QUrl &url)
     RecentFile entry;
     entry.url = url;
     entry.displayName = extractDisplayName(url);
-    entry.albumArtPath = QString();
+    entry.albumArtPath = extractAlbumArt(path);
 
     beginInsertRows(QModelIndex(), 0, 0);
     m_files.prepend(entry);
@@ -174,7 +181,7 @@ void RecentFilesModel::loadFromConfig()
         RecentFile entry;
         entry.url = url;
         entry.displayName = extractDisplayName(url);
-        entry.albumArtPath = QString();
+        entry.albumArtPath = extractAlbumArt(path);
 
         m_files.append(entry);
         qDebug() << "    -> added:" << entry.displayName;
@@ -212,4 +219,76 @@ QString RecentFilesModel::extractDisplayName(const QUrl &url) const
 
     QFileInfo info(url.toLocalFile());
     return info.completeBaseName();
+}
+
+QString RecentFilesModel::extractAlbumArt(const QString &path)
+{
+    TagLib::FileRef file(path.toUtf8().constData());
+    if (file.isNull()) {
+        return QString();
+    }
+
+    TagLib::StringList complexKeys = file.complexPropertyKeys();
+    if (!complexKeys.contains("PICTURE")) {
+        return QString();
+    }
+
+    auto pictures = file.complexProperties("PICTURE");
+    if (pictures.isEmpty()) {
+        return QString();
+    }
+
+    const auto &picture = pictures[0];
+    auto dataIt = picture.find("data");
+    if (dataIt == picture.end()) {
+        return QString();
+    }
+
+    const TagLib::Variant &pictureData = dataIt->second;
+    if (pictureData.type() != TagLib::Variant::ByteVector) {
+        return QString();
+    }
+
+    TagLib::ByteVector data = pictureData.value<TagLib::ByteVector>();
+    if (data.isEmpty()) {
+        return QString();
+    }
+
+    QString extension = QStringLiteral(".jpg");
+    auto mimeIt = picture.find("mimeType");
+    if (mimeIt != picture.end()) {
+        QString mimeType = QString::fromStdString(mimeIt->second.value<TagLib::String>().to8Bit(true));
+        if (mimeType.contains(QStringLiteral("png"), Qt::CaseInsensitive)) {
+            extension = QStringLiteral(".png");
+        } else if (mimeType.contains(QStringLiteral("gif"), Qt::CaseInsensitive)) {
+            extension = QStringLiteral(".gif");
+        }
+    }
+
+    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QString tempTemplate = tempDir + QStringLiteral("/musik_recent_art_XXXXXX") + extension;
+
+    QTemporaryFile tempFile(tempTemplate);
+    tempFile.setAutoRemove(false);
+
+    if (tempFile.open()) {
+        tempFile.write(data.data(), data.size());
+        QString tempPath = tempFile.fileName();
+        tempFile.close();
+
+        m_tempArtPaths.append(tempPath);
+        return QStringLiteral("file://") + tempPath;
+    }
+
+    return QString();
+}
+
+void RecentFilesModel::cleanupTempFiles()
+{
+    for (const QString &path : m_tempArtPaths) {
+        if (QFile::exists(path)) {
+            QFile::remove(path);
+        }
+    }
+    m_tempArtPaths.clear();
 }

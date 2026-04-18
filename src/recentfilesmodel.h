@@ -55,8 +55,11 @@ private:
     void loadFromConfig();
     void saveToConfig();
     QString extractDisplayName(const QUrl &url) const;
+    QString extractAlbumArt(const QString &path);
+    void cleanupTempFiles();
 
     QList<RecentFile> m_files;
+    QStringList m_tempArtPaths;
     static constexpr int MaxRecentFiles = 10;
 };
 
