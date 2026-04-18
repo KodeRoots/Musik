@@ -290,6 +290,23 @@ Kirigami.ApplicationWindow {
     function playTrack(url) {
         if (!url || url.toString() === "")
             return;
+
+        // Check if url is already in playlist
+        var found = false;
+        for (var i = 0; i < playlistModel.count; i++) {
+            if (playlistModel.urlAt(i).toString() === url.toString()) {
+                playlistModel.currentIndex = i;
+                found = true;
+                break;
+            }
+        }
+
+        // If not in playlist, add it
+        if (!found) {
+            playlistModel.addTracks([url]);
+            playlistModel.currentIndex = playlistModel.count - 1;
+        }
+
         audioPlayer.loadFile(url);
         mediaPlayer.source = url;
         mediaPlayer.play();
