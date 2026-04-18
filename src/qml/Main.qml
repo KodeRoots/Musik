@@ -28,6 +28,7 @@ Kirigami.ApplicationWindow {
 
         Controls.MenuItem {
             text: i18nc("@action", "Mini mode")
+            icon.name: "view-restore"
             checkable: true
             checked: Settings.miniMode
             onTriggered: Settings.miniMode = checked
@@ -35,6 +36,7 @@ Kirigami.ApplicationWindow {
 
         Controls.MenuItem {
             text: i18nc("@action", "No header mode")
+            icon.name: "view-fullscreen"
             checkable: true
             checked: Settings.noHeaderMode
             onTriggered: {
@@ -48,6 +50,7 @@ Kirigami.ApplicationWindow {
 
         Controls.MenuItem {
             text: i18nc("@action", "Show volume controls")
+            icon.name: "audio-volume-high"
             checkable: true
             checked: Settings.showVolumeControls && !Settings.miniMode && !Settings.noHeaderMode
             enabled: !Settings.miniMode && !Settings.noHeaderMode
@@ -58,11 +61,13 @@ Kirigami.ApplicationWindow {
 
         Controls.MenuItem {
             text: i18nc("@action", "Playlist")
+            icon.name: "view-media-playlist"
             onTriggered: playlistDrawer.open()
         }
 
         Controls.MenuItem {
             text: i18nc("@action", "Open")
+            icon.name: "document-open"
             onTriggered: {
                 shouldAutoPlay = true;
                 fileDialog.open();
@@ -71,6 +76,7 @@ Kirigami.ApplicationWindow {
 
         Controls.MenuItem {
             text: i18nc("@action", "Close")
+            icon.name: "application-exit"
             onTriggered: Qt.quit()
         }
     }
