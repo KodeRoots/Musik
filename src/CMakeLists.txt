@@ -12,6 +12,8 @@ target_sources(musik
     audioplayer.h
     playlistmodel.cpp
     playlistmodel.h
+    recentfilesmodel.cpp
+    recentfilesmodel.h
     settings.cpp
     settings.h
 )

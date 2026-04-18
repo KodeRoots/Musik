@@ -290,9 +290,27 @@ Kirigami.ApplicationWindow {
     function playTrack(url) {
         if (!url || url.toString() === "")
             return;
+
+        // Check if url is already in playlist
+        var found = false;
+        for (var i = 0; i < playlistModel.count; i++) {
+            if (playlistModel.urlAt(i).toString() === url.toString()) {
+                playlistModel.currentIndex = i;
+                found = true;
+                break;
+            }
+        }
+
+        // If not in playlist, add it
+        if (!found) {
+            playlistModel.addTracks([url]);
+            playlistModel.currentIndex = playlistModel.count - 1;
+        }
+
         audioPlayer.loadFile(url);
         mediaPlayer.source = url;
         mediaPlayer.play();
+        RecentFilesModel.addFile(url);
     }
 
     // Time formatting helper function
@@ -403,12 +421,11 @@ Kirigami.ApplicationWindow {
 
         ColumnLayout {
             anchors.fill: parent
-            // spacing: Kirigami.Units.largeSpacing
 
             // Header row
             RowLayout {
                 Layout.fillWidth: true
-                Layout.margins: miniMode ? 0 : Kirigami.Units.largeSpacing
+                Layout.leftMargin: Kirigami.Units.smallSpacing
 
                 Kirigami.Heading {
                     text: i18n("Playlist")
@@ -471,6 +488,8 @@ Kirigami.ApplicationWindow {
                             Layout.preferredWidth: Layout.preferredHeight
                             Layout.preferredHeight: parent.height
                             color: Kirigami.Theme.backgroundColor
+                            border.width: 1
+                            border.color: Kirigami.Theme.disabledTextColor
 
                             Image {
                                 anchors.fill: parent
@@ -560,7 +579,6 @@ Kirigami.ApplicationWindow {
             // Add Files button (visible only when playlist has tracks)
             Controls.Button {
                 Layout.fillWidth: true
-                Layout.margins: miniMode ? 0 : Kirigami.Units.largeSpacing
                 text: i18n("Add Tracks")
                 icon.name: "list-add"
                 visible: playlistModel.count > 0
@@ -847,7 +865,7 @@ Kirigami.ApplicationWindow {
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: Kirigami.Units.largeSpacing
-                visible: !root.hasFile
+                visible: !root.hasFile && RecentFilesModel.count === 0
 
                 Kirigami.Icon {
                     Layout.alignment: Qt.AlignHCenter
@@ -871,6 +889,104 @@ Kirigami.ApplicationWindow {
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
                     color: Kirigami.Theme.disabledTextColor
+                }
+            }
+
+            // Recently Played list (shown when no file loaded but recent files exist)
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: Kirigami.Units.largeSpacing * 3
+                spacing: Kirigami.Units.largeSpacing
+                visible: !root.hasFile && RecentFilesModel.count > 0
+
+                Kirigami.Heading {
+                    Layout.fillWidth: true
+                    text: i18n("Recently Played")
+                    level: 3
+                }
+
+                ListView {
+                    id: recentFilesView
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    model: RecentFilesModel
+                    spacing: Kirigami.Units.smallSpacing
+                    clip: true
+
+                    delegate: Controls.ItemDelegate {
+                        width: ListView.view.width
+                        height: 48
+                        padding: Kirigami.Units.smallSpacing
+
+                        onClicked: playTrack(model.url)
+
+                        background: Rectangle {
+                            color: hovered ? Kirigami.Theme.hoverColor : "transparent"
+                            radius: Kirigami.Units.smallSpacing
+                        }
+
+                        contentItem: RowLayout {
+                            spacing: Kirigami.Units.smallSpacing
+
+                            Rectangle {
+                                Layout.preferredWidth: 40
+                                Layout.preferredHeight: 40
+                                color: Kirigami.Theme.backgroundColor
+                                border.width: 1
+                                border.color: Kirigami.Theme.disabledTextColor
+
+                                Image {
+                                    anchors.fill: parent
+                                    anchors.margins: 1
+                                    source: model.albumArt || ""
+                                    fillMode: Image.PreserveAspectCrop
+                                    visible: model.albumArt !== ""
+                                }
+
+                                Kirigami.Icon {
+                                    anchors.centerIn: parent
+                                    width: 20
+                                    height: 20
+                                    source: "media-optical-audio"
+                                    visible: model.albumArt === ""
+                                    opacity: 0.5
+                                }
+                            }
+
+                            Controls.Label {
+                                Layout.fillWidth: true
+                                text: model.displayName || i18n("Unknown")
+                                elide: Text.ElideRight
+                            }
+
+                            Controls.ToolButton {
+                                icon.name: "list-remove"
+                                onClicked: RecentFilesModel.removeFile(index)
+                            }
+                        }
+                    }
+                }
+
+                Kirigami.Separator {
+                    Layout.fillWidth: true
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Controls.Label {
+                        text: i18n("Open a file to start listening")
+                        opacity: 0.5
+                        Layout.fillWidth: true
+                    }
+
+                    Controls.ToolButton {
+                        icon.name: "edit-clear"
+                        onClicked: RecentFilesModel.clear()
+                        Controls.ToolTip.text: i18n("Clear history")
+                        Controls.ToolTip.visible: hovered
+                        Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                    }
                 }
             }
 
