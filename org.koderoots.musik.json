@@ -10,7 +10,8 @@
     "--socket=wayland",
     "--socket=pulseaudio",
     "--device=dri",
-    "--filesystem=xdg-music:ro"
+    "--filesystem=xdg-music:ro",
+    "--filesystem=xdg-download:ro"
   ],
   "modules": [
     {
