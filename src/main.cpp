@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QIcon>
 #include <KAboutData>
 #include <KIconTheme>
 #include <KLocalizedString>
@@ -45,6 +46,7 @@ int main(int argc, char *argv[])
         i18nc("NAME OF TRANSLATORS", "Your names"),
         i18nc("EMAIL OF TRANSLATORS", "Your emails"));
     KAboutData::setApplicationData(aboutData);
+    QApplication::setWindowIcon(QIcon::fromTheme(QStringLiteral("org.koderoots.musik")));
 
     QApplication::setApplicationName(aboutData.componentName());
     QApplication::setApplicationVersion(aboutData.version());
