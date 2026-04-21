@@ -129,8 +129,8 @@ Kirigami.ApplicationWindow {
             text: i18nc("@action", "Show volume controls")
             icon.name: "audio-volume-high"
             checkable: true
-            checked: Settings.showVolumeControls && !Settings.miniMode && !Settings.noHeaderMode
-            enabled: !Settings.miniMode && !Settings.noHeaderMode
+            checked: Settings.showVolumeControls && !Settings.miniMode
+            enabled: !Settings.miniMode
             onTriggered: Settings.showVolumeControls = checked
         }
 
@@ -484,8 +484,8 @@ Kirigami.ApplicationWindow {
                 text: i18nc("@action", "Show volume controls")
                 icon.name: "audio-volume-high"
                 checkable: true
-                checked: Settings.showVolumeControls && !Settings.miniMode && !Settings.noHeaderMode
-                enabled: !Settings.miniMode && !Settings.noHeaderMode
+                checked: Settings.showVolumeControls && !Settings.miniMode
+                enabled: !Settings.miniMode
                 onToggled: Settings.showVolumeControls = checked
             },
             Kirigami.Action {
