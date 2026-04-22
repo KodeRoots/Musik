@@ -88,6 +88,6 @@
   </supports>
 
   <custom>
-    <value key="flathub::manifest">https://github.com/KodeRoots/Musik/blob/main/org.koderoots.musik.json</value>
+    <value key="flathub::manifest">https://github.com/flathub/org.koderoots.musik/blob/master/org.koderoots.musik.json</value>
   </custom>
 </component>
