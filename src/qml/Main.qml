@@ -17,6 +17,14 @@ Kirigami.ApplicationWindow {
     Component.onCompleted: {
         MprisController.registerService();
         MprisController.volume = Settings.volume / 100.0;
+        resumeTimer.start();
+    }
+
+    Component.onDestruction: {
+        if (root.hasFile) {
+            Settings.lastPosition = mediaPlayer.position;
+            Settings.lastFile = mediaPlayer.source.toString();
+        }
     }
 
     onHasFileChanged: {
@@ -394,6 +402,7 @@ Kirigami.ApplicationWindow {
         mediaPlayer.source = url;
         mediaPlayer.play();
         RecentFilesModel.addFile(url);
+        Settings.lastFile = url.toString();
     }
 
     // Time formatting helper function
@@ -459,6 +468,7 @@ Kirigami.ApplicationWindow {
     property bool showVolumeControls: Settings.showVolumeControls
     property bool miniMode: Settings.miniMode
     property bool noHeaderMode: Settings.noHeaderMode
+    property bool resumePlayback: Settings.resumePlayback
 
     globalDrawer: Kirigami.GlobalDrawer {
         isMenu: true
@@ -490,6 +500,13 @@ Kirigami.ApplicationWindow {
                 checked: Settings.showVolumeControls && !Settings.miniMode
                 enabled: !Settings.miniMode
                 onToggled: Settings.showVolumeControls = checked
+            },
+            Kirigami.Action {
+                text: i18nc("@action", "Resume playback on start")
+                icon.name: "media-playback-start"
+                checkable: true
+                checked: Settings.resumePlayback
+                onToggled: Settings.resumePlayback = checked
             },
             Kirigami.Action {
                 text: i18nc("@action", "About")
@@ -781,6 +798,42 @@ Kirigami.ApplicationWindow {
         running: mediaPlayer.playbackState === MediaPlayer.PlayingState
         repeat: true
         onTriggered: MprisController.position = mediaPlayer.position
+    }
+
+    Timer {
+        id: resumeTimer
+        interval: 200
+        onTriggered: {
+            if (!root.hasFile && Settings.resumePlayback && Settings.lastFile !== "") {
+                audioPlayer.loadFile(Settings.lastFile);
+                mediaPlayer.source = Settings.lastFile;
+                resumeSeekTimer.start();
+            }
+        }
+    }
+
+    Timer {
+        id: resumeSeekTimer
+        interval: 300
+        onTriggered: {
+            if (Settings.lastPosition > 0 && mediaPlayer.duration > 0) {
+                mediaPlayer.position = Math.min(Settings.lastPosition, mediaPlayer.duration - 1000);
+            }
+            mediaPlayer.play();
+            RecentFilesModel.addFile(Settings.lastFile);
+        }
+    }
+
+    Timer {
+        id: positionSaveTimer
+        interval: 5000
+        running: mediaPlayer.playbackState === MediaPlayer.PlayingState
+        repeat: true
+        onTriggered: {
+            if (root.hasFile) {
+                Settings.lastPosition = mediaPlayer.position;
+            }
+        }
     }
 
     // File dialog for opening audio files

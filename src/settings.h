@@ -9,58 +9,78 @@
 #include <QObject>
 #include <QQmlEngine>
 
-class Settings : public QObject
-{
-    Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
+class Settings : public QObject {
+  Q_OBJECT
+  QML_ELEMENT
+  QML_SINGLETON
 
-    Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
-    Q_PROPERTY(bool muted READ muted WRITE setMuted NOTIFY mutedChanged)
-    Q_PROPERTY(bool showVolumeControls READ showVolumeControls WRITE setShowVolumeControls NOTIFY showVolumeControlsChanged)
-    Q_PROPERTY(bool miniMode READ miniMode WRITE setMiniMode NOTIFY miniModeChanged)
-    Q_PROPERTY(bool noHeaderMode READ noHeaderMode WRITE setNoHeaderMode NOTIFY noHeaderModeChanged)
+  Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
+  Q_PROPERTY(bool muted READ muted WRITE setMuted NOTIFY mutedChanged)
+  Q_PROPERTY(bool showVolumeControls READ showVolumeControls WRITE
+                 setShowVolumeControls NOTIFY showVolumeControlsChanged)
+  Q_PROPERTY(
+      bool miniMode READ miniMode WRITE setMiniMode NOTIFY miniModeChanged)
+  Q_PROPERTY(bool noHeaderMode READ noHeaderMode WRITE setNoHeaderMode NOTIFY
+                 noHeaderModeChanged)
+  Q_PROPERTY(
+      QString lastFile READ lastFile WRITE setLastFile NOTIFY lastFileChanged)
+  Q_PROPERTY(qint64 lastPosition READ lastPosition WRITE setLastPosition NOTIFY
+                 lastPositionChanged)
+  Q_PROPERTY(bool resumePlayback READ resumePlayback WRITE setResumePlayback
+                 NOTIFY resumePlaybackChanged)
 
 public:
-    explicit Settings(QObject *parent = nullptr);
+  explicit Settings(QObject *parent = nullptr);
 
-    int volume() const;
-    void setVolume(int volume);
+  int volume() const;
+  void setVolume(int volume);
 
-    bool muted() const;
-    void setMuted(bool muted);
+  bool muted() const;
+  void setMuted(bool muted);
 
-    bool showVolumeControls() const;
-    void setShowVolumeControls(bool show);
+  bool showVolumeControls() const;
+  void setShowVolumeControls(bool show);
 
-    bool miniMode() const;
-    void setMiniMode(bool miniMode);
+  bool miniMode() const;
+  void setMiniMode(bool miniMode);
 
-    bool noHeaderMode() const;
-    void setNoHeaderMode(bool noHeaderMode);
+  bool noHeaderMode() const;
+  void setNoHeaderMode(bool noHeaderMode);
 
-    static Settings *create(QQmlEngine *, QJSEngine *)
-    {
-        return new Settings;
-    }
+  QString lastFile() const;
+  void setLastFile(const QString &lastFile);
+
+  qint64 lastPosition() const;
+  void setLastPosition(qint64 lastPosition);
+
+  bool resumePlayback() const;
+  void setResumePlayback(bool resume);
+
+  static Settings *create(QQmlEngine *, QJSEngine *) { return new Settings; }
 
 Q_SIGNALS:
-    void volumeChanged();
-    void mutedChanged();
-    void showVolumeControlsChanged();
-    void miniModeChanged();
-    void noHeaderModeChanged();
+  void volumeChanged();
+  void mutedChanged();
+  void showVolumeControlsChanged();
+  void miniModeChanged();
+  void noHeaderModeChanged();
+  void lastFileChanged();
+  void lastPositionChanged();
+  void resumePlaybackChanged();
 
 private:
-    void loadSettings();
-    void saveSettings();
+  void loadSettings();
+  void saveSettings();
 
-    KSharedConfig::Ptr m_config;
-    int m_volume = 70;
-    bool m_muted = false;
-    bool m_showVolumeControls = false;
-    bool m_miniMode = false;
-    bool m_noHeaderMode = false;
+  KSharedConfig::Ptr m_config;
+  int m_volume = 70;
+  bool m_muted = false;
+  bool m_showVolumeControls = false;
+  bool m_miniMode = false;
+  bool m_noHeaderMode = false;
+  QString m_lastFile;
+  qint64 m_lastPosition = 0;
+  bool m_resumePlayback = true;
 };
 
 #endif // SETTINGS_H
