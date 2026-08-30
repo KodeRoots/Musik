@@ -18,6 +18,8 @@ target_sources(musik
     recentfilesmodel.h
     settings.cpp
     settings.h
+    traycontroller.cpp
+    traycontroller.h
 )
 
 ecm_target_qml_sources(musik

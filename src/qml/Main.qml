@@ -17,13 +17,22 @@ Kirigami.ApplicationWindow {
     Component.onCompleted: {
         MprisController.registerService();
         MprisController.volume = Settings.volume / 100.0;
+        if (Settings.restorePlaylist) {
+            playlistModel.loadFromDefault();
+        }
         resumeTimer.start();
+        if (Settings.systemTrayEnabled && Settings.startMinimized && trayController.available) {
+            root.hide();
+        }
     }
 
     Component.onDestruction: {
         if (root.hasFile) {
             Settings.lastPosition = mediaPlayer.position;
             Settings.lastFile = mediaPlayer.source.toString();
+        }
+        if (Settings.restorePlaylist && playlistModel.count > 0) {
+            playlistModel.saveToDefault();
         }
     }
 
@@ -157,6 +166,34 @@ Kirigami.ApplicationWindow {
                 shouldAutoPlay = true;
                 fileDialog.open();
             }
+        }
+
+        Controls.MenuSeparator {}
+
+        Controls.MenuItem {
+            text: i18nc("@action", "Restore playlist on start")
+            icon.name: "view-media-playlist"
+            checkable: true
+            checked: Settings.restorePlaylist
+            onTriggered: Settings.restorePlaylist = checked
+        }
+
+        Controls.MenuItem {
+            text: i18nc("@action", "System tray icon")
+            icon.name: "user-tray-full"
+            checkable: true
+            checked: Settings.systemTrayEnabled
+            enabled: trayController.available
+            onTriggered: Settings.systemTrayEnabled = checked
+        }
+
+        Controls.MenuItem {
+            text: i18nc("@action", "Minimize to tray on close")
+            icon.name: "window-minimize"
+            checkable: true
+            checked: Settings.minimizeToTray
+            enabled: Settings.systemTrayEnabled && trayController.available
+            onTriggered: Settings.minimizeToTray = checked
         }
 
         Controls.MenuItem {
@@ -330,6 +367,58 @@ Kirigami.ApplicationWindow {
 
     // Track if a file is loaded
     readonly property bool hasFile: mediaPlayer.source.toString() !== ""
+
+    // True when the user explicitly quits (bypasses minimize-to-tray)
+    property bool forceQuit: false
+
+    onClosing: function (close) {
+        if (!forceQuit && Settings.systemTrayEnabled && Settings.minimizeToTray && trayController.available) {
+            close.accepted = false;
+            root.hide();
+        }
+    }
+
+    // System tray controller
+    TrayController {
+        id: trayController
+        enabled: Settings.systemTrayEnabled
+        playing: mediaPlayer.playbackState === MediaPlayer.PlayingState
+        toolTip: root.hasFile ? (audioPlayer.title + " - " + audioPlayer.artist) : i18nc("@title:tray", "Musik")
+
+        onShowWindowRequested: {
+            root.show();
+            root.raise();
+            root.requestActivate();
+        }
+
+        onPlayPauseRequested: {
+            if (mediaPlayer.playbackState === MediaPlayer.PlayingState)
+                mediaPlayer.pause();
+            else if (root.hasFile)
+                mediaPlayer.play();
+        }
+
+        onNextRequested: {
+            var nextIdx = playlistModel.nextIndex(shuffleEnabled, repeatMode);
+            if (nextIdx >= 0) {
+                playlistModel.currentIndex = nextIdx;
+                playTrack(playlistModel.urlAt(nextIdx));
+            }
+        }
+
+        onPreviousRequested: {
+            var prevIdx = playlistModel.previousIndex();
+            if (prevIdx >= 0) {
+                playlistModel.currentIndex = prevIdx;
+                playTrack(playlistModel.urlAt(prevIdx));
+            }
+        }
+
+        onQuitRequested: {
+            root.forceQuit = true;
+            Qt.quit();
+        }
+    }
 
     // Playback mode properties
     property bool shuffleEnabled: false
@@ -509,6 +598,40 @@ Kirigami.ApplicationWindow {
                 onToggled: Settings.resumePlayback = checked
             },
             Kirigami.Action {
+                text: i18nc("@action", "Restore playlist on start")
+                icon.name: "view-media-playlist"
+                checkable: true
+                checked: Settings.restorePlaylist
+                onToggled: Settings.restorePlaylist = checked
+            },
+            Kirigami.Action {
+                separator: true
+            },
+            Kirigami.Action {
+                text: i18nc("@action", "System tray icon")
+                icon.name: "user-tray-full"
+                checkable: true
+                checked: Settings.systemTrayEnabled
+                enabled: trayController.available
+                onToggled: Settings.systemTrayEnabled = checked
+            },
+            Kirigami.Action {
+                text: i18nc("@action", "Minimize to tray on close")
+                icon.name: "window-minimize"
+                checkable: true
+                checked: Settings.minimizeToTray
+                enabled: Settings.systemTrayEnabled && trayController.available
+                onToggled: Settings.minimizeToTray = checked
+            },
+            Kirigami.Action {
+                text: i18nc("@action", "Start minimized to tray")
+                icon.name: "arrow-down"
+                checkable: true
+                checked: Settings.startMinimized
+                enabled: Settings.systemTrayEnabled && trayController.available
+                onToggled: Settings.startMinimized = checked
+            },
+            Kirigami.Action {
                 text: i18nc("@action", "About")
                 icon.name: "help-about"
                 onTriggered: root.pageStack.layers.push(aboutPage)
@@ -543,6 +666,27 @@ Kirigami.ApplicationWindow {
                     text: i18n("Playlist")
                     level: miniMode ? 3 : 2
                     Layout.fillWidth: true
+                }
+
+                Controls.ToolButton {
+                    icon.name: "document-open"
+                    text: i18n("Load playlist")
+                    onClicked: loadPlaylistDialog.open()
+
+                    Controls.ToolTip.text: text
+                    Controls.ToolTip.visible: hovered
+                    Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
+                }
+
+                Controls.ToolButton {
+                    icon.name: "document-save-as"
+                    text: i18n("Save playlist")
+                    onClicked: savePlaylistDialog.open()
+                    enabled: playlistModel.count > 0
+
+                    Controls.ToolTip.text: text
+                    Controls.ToolTip.visible: hovered
+                    Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                 }
 
                 Controls.ToolButton {
@@ -858,6 +1002,34 @@ Kirigami.ApplicationWindow {
                     playlistModel.currentIndex = 0;
                     playTrack(playlistModel.urlAt(0));
                 }
+            }
+        }
+    }
+
+    // File dialog for saving the playlist
+    FileDialog {
+        id: savePlaylistDialog
+        title: i18n("Save Playlist")
+        fileMode: FileDialog.SaveFile
+        nameFilters: [i18n("M3U Playlist") + " (*.m3u8 *.m3u)", i18n("PLS Playlist") + " (*.pls)"]
+        onAccepted: {
+            if (!playlistModel.saveToFile(selectedFile)) {
+                showError(i18n("Failed to save playlist"));
+            }
+        }
+    }
+
+    // File dialog for loading a playlist
+    FileDialog {
+        id: loadPlaylistDialog
+        title: i18n("Load Playlist")
+        fileMode: FileDialog.OpenFile
+        nameFilters: [i18n("Playlists") + " (*.m3u *.m3u8 *.pls)", i18n("All Files") + " (*)"]
+        onAccepted: {
+            var wasEmpty = (playlistModel.count === 0);
+            if (playlistModel.loadFromFile(selectedFile) && wasEmpty && playlistModel.count > 0) {
+                playlistModel.currentIndex = 0;
+                playTrack(playlistModel.urlAt(0));
             }
         }
     }

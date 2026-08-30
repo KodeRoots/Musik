@@ -95,6 +95,46 @@ void Settings::setResumePlayback(bool resume) {
   }
 }
 
+bool Settings::restorePlaylist() const { return m_restorePlaylist; }
+
+void Settings::setRestorePlaylist(bool restore) {
+  if (m_restorePlaylist != restore) {
+    m_restorePlaylist = restore;
+    Q_EMIT restorePlaylistChanged();
+    saveSettings();
+  }
+}
+
+bool Settings::systemTrayEnabled() const { return m_systemTrayEnabled; }
+
+void Settings::setSystemTrayEnabled(bool enabled) {
+  if (m_systemTrayEnabled != enabled) {
+    m_systemTrayEnabled = enabled;
+    Q_EMIT systemTrayEnabledChanged();
+    saveSettings();
+  }
+}
+
+bool Settings::minimizeToTray() const { return m_minimizeToTray; }
+
+void Settings::setMinimizeToTray(bool minimize) {
+  if (m_minimizeToTray != minimize) {
+    m_minimizeToTray = minimize;
+    Q_EMIT minimizeToTrayChanged();
+    saveSettings();
+  }
+}
+
+bool Settings::startMinimized() const { return m_startMinimized; }
+
+void Settings::setStartMinimized(bool minimized) {
+  if (m_startMinimized != minimized) {
+    m_startMinimized = minimized;
+    Q_EMIT startMinimizedChanged();
+    saveSettings();
+  }
+}
+
 void Settings::loadSettings() {
   KConfigGroup audioGroup = m_config->group(QStringLiteral("Audio"));
   m_volume = audioGroup.readEntry(QStringLiteral("Volume"), 70);
@@ -105,6 +145,15 @@ void Settings::loadSettings() {
   m_noHeaderMode = audioGroup.readEntry(QStringLiteral("NoHeaderMode"), false);
   m_resumePlayback =
       audioGroup.readEntry(QStringLiteral("ResumePlayback"), true);
+  m_restorePlaylist =
+      audioGroup.readEntry(QStringLiteral("RestorePlaylist"), true);
+
+  KConfigGroup trayGroup = m_config->group(QStringLiteral("SystemTray"));
+  m_systemTrayEnabled = trayGroup.readEntry(QStringLiteral("Enabled"), false);
+  m_minimizeToTray =
+      trayGroup.readEntry(QStringLiteral("MinimizeToTray"), false);
+  m_startMinimized =
+      trayGroup.readEntry(QStringLiteral("StartMinimized"), false);
 
   KConfigGroup playbackGroup = m_config->group(QStringLiteral("Playback"));
   m_lastFile = playbackGroup.readEntry(QStringLiteral("LastFile"), QString());
@@ -120,7 +169,14 @@ void Settings::saveSettings() {
   audioGroup.writeEntry(QStringLiteral("MiniMode"), m_miniMode);
   audioGroup.writeEntry(QStringLiteral("NoHeaderMode"), m_noHeaderMode);
   audioGroup.writeEntry(QStringLiteral("ResumePlayback"), m_resumePlayback);
+  audioGroup.writeEntry(QStringLiteral("RestorePlaylist"), m_restorePlaylist);
   audioGroup.sync();
+
+  KConfigGroup trayGroup = m_config->group(QStringLiteral("SystemTray"));
+  trayGroup.writeEntry(QStringLiteral("Enabled"), m_systemTrayEnabled);
+  trayGroup.writeEntry(QStringLiteral("MinimizeToTray"), m_minimizeToTray);
+  trayGroup.writeEntry(QStringLiteral("StartMinimized"), m_startMinimized);
+  trayGroup.sync();
 
   KConfigGroup playbackGroup = m_config->group(QStringLiteral("Playback"));
   playbackGroup.writeEntry(QStringLiteral("LastFile"), m_lastFile);

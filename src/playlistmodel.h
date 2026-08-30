@@ -98,6 +98,30 @@ public:
      */
     Q_INVOKABLE int previousIndex() const;
 
+    /**
+     * @brief Save the playlist to a file (.m3u, .m3u8 or .pls by extension)
+     * @param fileUrl Local file URL of the playlist file
+     * @return true on success
+     */
+    Q_INVOKABLE bool saveToFile(const QUrl &fileUrl);
+
+    /**
+     * @brief Load tracks from a playlist file (.m3u, .m3u8 or .pls)
+     * @param fileUrl Local file URL of the playlist file
+     * @return true if at least one track was loaded
+     */
+    Q_INVOKABLE bool loadFromFile(const QUrl &fileUrl);
+
+    /**
+     * @brief Save the playlist to the default auto-save location
+     */
+    Q_INVOKABLE void saveToDefault();
+
+    /**
+     * @brief Load the playlist from the default auto-save location
+     */
+    Q_INVOKABLE void loadFromDefault();
+
 Q_SIGNALS:
     void countChanged();
     void currentIndexChanged();
@@ -108,6 +132,10 @@ private:
     Track extractTrackMetadata(const QUrl &url);
     void cleanupTempFiles();
     bool isAudioFile(const QString &path) const;
+    bool writeM3U(const QString &path);
+    bool writePLS(const QString &path);
+    QList<QUrl> parsePlaylist(const QString &path) const;
+    static QString defaultPlaylistPath();
 
     QList<Track> m_tracks;
     int m_currentIndex = -1;

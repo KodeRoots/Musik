@@ -28,6 +28,14 @@ class Settings : public QObject {
                  lastPositionChanged)
   Q_PROPERTY(bool resumePlayback READ resumePlayback WRITE setResumePlayback
                  NOTIFY resumePlaybackChanged)
+  Q_PROPERTY(bool restorePlaylist READ restorePlaylist WRITE setRestorePlaylist
+                 NOTIFY restorePlaylistChanged)
+  Q_PROPERTY(bool systemTrayEnabled READ systemTrayEnabled WRITE
+                 setSystemTrayEnabled NOTIFY systemTrayEnabledChanged)
+  Q_PROPERTY(bool minimizeToTray READ minimizeToTray WRITE setMinimizeToTray
+                 NOTIFY minimizeToTrayChanged)
+  Q_PROPERTY(bool startMinimized READ startMinimized WRITE setStartMinimized
+                 NOTIFY startMinimizedChanged)
 
 public:
   explicit Settings(QObject *parent = nullptr);
@@ -56,6 +64,18 @@ public:
   bool resumePlayback() const;
   void setResumePlayback(bool resume);
 
+  bool restorePlaylist() const;
+  void setRestorePlaylist(bool restore);
+
+  bool systemTrayEnabled() const;
+  void setSystemTrayEnabled(bool enabled);
+
+  bool minimizeToTray() const;
+  void setMinimizeToTray(bool minimize);
+
+  bool startMinimized() const;
+  void setStartMinimized(bool minimized);
+
   static Settings *create(QQmlEngine *, QJSEngine *) { return new Settings; }
 
 Q_SIGNALS:
@@ -67,6 +87,10 @@ Q_SIGNALS:
   void lastFileChanged();
   void lastPositionChanged();
   void resumePlaybackChanged();
+  void restorePlaylistChanged();
+  void systemTrayEnabledChanged();
+  void minimizeToTrayChanged();
+  void startMinimizedChanged();
 
 private:
   void loadSettings();
@@ -81,6 +105,10 @@ private:
   QString m_lastFile;
   qint64 m_lastPosition = 0;
   bool m_resumePlayback = true;
+  bool m_restorePlaylist = true;
+  bool m_systemTrayEnabled = false;
+  bool m_minimizeToTray = false;
+  bool m_startMinimized = false;
 };
 
 #endif // SETTINGS_H

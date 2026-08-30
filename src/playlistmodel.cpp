@@ -3,11 +3,14 @@
 
 #include "playlistmodel.h"
 
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QRandomGenerator>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryFile>
+#include <QTextStream>
 
 #include <KLocalizedString>
 
@@ -263,6 +266,169 @@ int PlaylistModel::previousIndex() const
         return m_currentIndex;
     }
     return m_currentIndex - 1;
+}
+
+QString PlaylistModel::defaultPlaylistPath()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/playlist.m3u8");
+}
+
+bool PlaylistModel::saveToFile(const QUrl &fileUrl)
+{
+    const QString path = fileUrl.toLocalFile();
+    if (path.isEmpty()) {
+        Q_EMIT errorOccurred(i18n("Invalid playlist file path"));
+        return false;
+    }
+
+    if (path.endsWith(QLatin1String(".pls"), Qt::CaseInsensitive)) {
+        return writePLS(path);
+    }
+    return writeM3U(path);
+}
+
+bool PlaylistModel::loadFromFile(const QUrl &fileUrl)
+{
+    const QString path = fileUrl.toLocalFile();
+    if (!QFile::exists(path)) {
+        Q_EMIT errorOccurred(i18n("Playlist file not found: %1", path));
+        return false;
+    }
+
+    const QList<QUrl> urls = parsePlaylist(path);
+    if (urls.isEmpty()) {
+        Q_EMIT errorOccurred(i18n("No valid tracks found in playlist: %1", path));
+        return false;
+    }
+
+    addTracks(urls);
+    return true;
+}
+
+void PlaylistModel::saveToDefault()
+{
+    if (m_tracks.isEmpty()) {
+        return;
+    }
+    const QString path = defaultPlaylistPath();
+    QDir().mkpath(QFileInfo(path).absolutePath());
+    writeM3U(path);
+}
+
+void PlaylistModel::loadFromDefault()
+{
+    const QString path = defaultPlaylistPath();
+    if (!QFile::exists(path)) {
+        return;
+    }
+    addTracks(parsePlaylist(path));
+}
+
+bool PlaylistModel::writeM3U(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        Q_EMIT errorOccurred(i18n("Could not save playlist: %1", path));
+        return false;
+    }
+
+    const bool utf8 = path.endsWith(QLatin1String(".m3u8"), Qt::CaseInsensitive);
+    QTextStream out(&file);
+    out.setEncoding(utf8 ? QStringConverter::Utf8 : QStringConverter::Latin1);
+
+    out << QStringLiteral("#EXTM3U\n");
+
+    const QDir baseDir = QFileInfo(path).dir();
+    for (const Track &track : m_tracks) {
+        const QString filePath = track.url.toLocalFile();
+        const int seconds = static_cast<int>(track.duration / 1000);
+        out << QStringLiteral("#EXTINF:%1,%2 - %3\n").arg(seconds).arg(track.artist, track.title);
+
+        const QString relative = baseDir.relativeFilePath(filePath);
+        const QString entry = relative.startsWith(QLatin1String("..")) ? filePath : relative;
+        out << entry << '\n';
+    }
+
+    return true;
+}
+
+bool PlaylistModel::writePLS(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        Q_EMIT errorOccurred(i18n("Could not save playlist: %1", path));
+        return false;
+    }
+
+    QTextStream out(&file);
+    out.setEncoding(QStringConverter::Latin1);
+
+    out << QStringLiteral("[playlist]\n");
+
+    const QDir baseDir = QFileInfo(path).dir();
+    int number = 1;
+    for (const Track &track : m_tracks) {
+        const QString filePath = track.url.toLocalFile();
+        const QString relative = baseDir.relativeFilePath(filePath);
+        const QString entry = relative.startsWith(QLatin1String("..")) ? filePath : relative;
+
+        out << QStringLiteral("File%1=%2\n").arg(number).arg(entry);
+        out << QStringLiteral("Title%1=%2 - %3\n").arg(number).arg(track.artist, track.title);
+        out << QStringLiteral("Length%1=%2\n").arg(number).arg(track.duration / 1000);
+        ++number;
+    }
+
+    out << QStringLiteral("NumberOfEntries=%1\n").arg(m_tracks.size());
+    out << QStringLiteral("Version=2\n");
+
+    return true;
+}
+
+QList<QUrl> PlaylistModel::parsePlaylist(const QString &path) const
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return {};
+    }
+
+    const QString content = QString::fromUtf8(file.readAll());
+    const QStringList lines = content.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    const QDir baseDir = QFileInfo(path).dir();
+    const bool isPls = path.endsWith(QLatin1String(".pls"), Qt::CaseInsensitive);
+
+    QList<QUrl> urls;
+    for (const QString &rawLine : lines) {
+        const QString line = rawLine.trimmed();
+        if (line.startsWith(QLatin1Char('#')) || line.startsWith(QLatin1Char('['))) {
+            continue;
+        }
+
+        QString entry;
+        if (isPls) {
+            static const QRegularExpression fileEntry(QStringLiteral("^File\\d+=(.+)$"));
+            const QRegularExpressionMatch match = fileEntry.match(line);
+            if (!match.hasMatch()) {
+                continue;
+            }
+            entry = match.captured(1).trimmed();
+        } else {
+            entry = line;
+        }
+
+        if (entry.isEmpty()) {
+            continue;
+        }
+
+        QString filePath = entry;
+        if (QDir::isRelativePath(filePath)) {
+            filePath = baseDir.absoluteFilePath(filePath);
+        }
+        if (QFile::exists(filePath)) {
+            urls.append(QUrl::fromLocalFile(QFileInfo(filePath).absoluteFilePath()));
+        }
+    }
+
+    return urls;
 }
 
 Track PlaylistModel::extractTrackMetadata(const QUrl &url)
