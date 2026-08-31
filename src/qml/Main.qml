@@ -669,40 +669,47 @@ Kirigami.ApplicationWindow {
                 }
 
                 Controls.ToolButton {
-                    icon.name: "document-open"
-                    text: i18n("Load playlist")
-                    onClicked: loadPlaylistDialog.open()
+                    id: playlistMenuButton
+                    icon.name: "application-menu"
+                    text: i18n("Playlist options")
+                    onClicked: playlistMenu.popup()
 
                     Controls.ToolTip.text: text
                     Controls.ToolTip.visible: hovered
                     Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
-                }
 
-                Controls.ToolButton {
-                    icon.name: "document-save-as"
-                    text: i18n("Save playlist")
-                    onClicked: savePlaylistDialog.open()
-                    enabled: playlistModel.count > 0
+                    Controls.Menu {
+                        id: playlistMenu
+                        x: parent.width - width
+                        y: parent.height
 
-                    Controls.ToolTip.text: text
-                    Controls.ToolTip.visible: hovered
-                    Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
-                }
+                        Controls.MenuItem {
+                            text: i18n("Load playlist")
+                            icon.name: "document-open"
+                            onTriggered: loadPlaylistDialog.open()
+                        }
 
-                Controls.ToolButton {
-                    icon.name: "edit-clear-all"
-                    text: i18n("Clear playlist")
-                    onClicked: {
-                        playlistModel.clear();
-                        mediaPlayer.stop();
-                        mediaPlayer.source = "";
-                        audioPlayer.clearMetadata();
+                        Controls.MenuItem {
+                            text: i18n("Save playlist")
+                            icon.name: "document-save-as"
+                            enabled: playlistModel.count > 0
+                            onTriggered: savePlaylistDialog.open()
+                        }
+
+                        Controls.MenuSeparator {}
+
+                        Controls.MenuItem {
+                            text: i18n("Clear playlist")
+                            icon.name: "edit-clear-all"
+                            enabled: playlistModel.count > 0
+                            onTriggered: {
+                                playlistModel.clear();
+                                mediaPlayer.stop();
+                                mediaPlayer.source = "";
+                                audioPlayer.clearMetadata();
+                            }
+                        }
                     }
-                    enabled: playlistModel.count > 0
-
-                    Controls.ToolTip.text: text
-                    Controls.ToolTip.visible: hovered
-                    Controls.ToolTip.delay: Kirigami.Units.toolTipDelay
                 }
             }
 
