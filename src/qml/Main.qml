@@ -747,28 +747,31 @@ Kirigami.ApplicationWindow {
                         spacing: Kirigami.Units.smallSpacing
 
                         // Album art thumbnail
-                        Rectangle {
+                        Item {
                             Layout.preferredWidth: Layout.preferredHeight
                             Layout.preferredHeight: parent.height
-                            color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15)
-                            border.width: 1
-                            border.color: Kirigami.Theme.disabledTextColor
 
-                            Image {
+                            Rectangle {
                                 anchors.fill: parent
-                                anchors.margins: 1
-                                source: model.albumArt || ""
-                                fillMode: Image.PreserveAspectCrop
-                                visible: model.albumArt !== ""
-                            }
+                                radius: Kirigami.Units.smallSpacing
+                                clip: true
+                                border.width: 1
+                                border.color: Kirigami.Theme.disabledTextColor
+                                color: "transparent"
 
-                            Kirigami.Icon {
-                                anchors.centerIn: parent
-                                width: 24
-                                height: 24
-                                source: "media-optical-audio"
-                                visible: model.albumArt === ""
-                                opacity: 0.5
+                                AnimatedAlbumArt {
+                                    anchors.fill: parent
+                                    visible: model.albumArt === ""
+                                    iconOpacity: 0.5
+                                    seed: index
+                                }
+
+                                Image {
+                                    anchors.fill: parent
+                                    source: model.albumArt || ""
+                                    fillMode: Image.PreserveAspectCrop
+                                    visible: model.albumArt !== ""
+                                }
                             }
                         }
 
@@ -1274,28 +1277,31 @@ Kirigami.ApplicationWindow {
                         contentItem: RowLayout {
                             spacing: Kirigami.Units.smallSpacing
 
-                            Rectangle {
+                            Item {
                                 Layout.preferredWidth: 40
                                 Layout.preferredHeight: 40
-                                color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15)
-                                border.width: 1
-                                border.color: Kirigami.Theme.disabledTextColor
 
-                                Image {
+                                Rectangle {
                                     anchors.fill: parent
-                                    anchors.margins: 1
-                                    source: model.albumArt || ""
-                                    fillMode: Image.PreserveAspectCrop
-                                    visible: model.albumArt !== ""
-                                }
+                                    radius: Kirigami.Units.smallSpacing
+                                    clip: true
+                                    border.width: 1
+                                    border.color: Kirigami.Theme.disabledTextColor
+                                    color: "transparent"
 
-                                Kirigami.Icon {
-                                    anchors.centerIn: parent
-                                    width: 20
-                                    height: 20
-                                    source: "media-optical-audio"
-                                    visible: model.albumArt === ""
-                                    opacity: 0.5
+                                    AnimatedAlbumArt {
+                                        anchors.fill: parent
+                                        visible: model.albumArt === ""
+                                        iconOpacity: 0.5
+                                        seed: index
+                                    }
+
+                                    Image {
+                                        anchors.fill: parent
+                                        source: model.albumArt || ""
+                                        fillMode: Image.PreserveAspectCrop
+                                        visible: model.albumArt !== ""
+                                    }
                                 }
                             }
 
@@ -1352,10 +1358,11 @@ Kirigami.ApplicationWindow {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15)
+                        color: "transparent"
                         border.color: Kirigami.Theme.disabledTextColor
                         border.width: 1
                         radius: Kirigami.Units.smallSpacing
+                        clip: true
 
                         // Album art image
                         Image {
@@ -1367,13 +1374,11 @@ Kirigami.ApplicationWindow {
                             visible: audioPlayer.albumArtPath !== ""
                         }
 
-                        // Placeholder icon when no album art
-                        Kirigami.Icon {
-                            anchors.centerIn: parent
-                            width: 120
-                            height: 120
-                            source: "media-optical-audio"
-                            opacity: 0.3
+                        // Animated gradient placeholder when no album art
+                        AnimatedAlbumArt {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            seed: (audioPlayer.title.length + 3) % 6
                             visible: audioPlayer.albumArtPath === ""
                         }
                     }

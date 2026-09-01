@@ -25,6 +25,8 @@ target_sources(musik
 ecm_target_qml_sources(musik
     SOURCES
     qml/Main.qml
+    qml/AnimatedAlbumArt.qml
+    qml/glow.svg
 )
 
 target_link_libraries(musik

@@ -10,8 +10,7 @@
     "--socket=wayland",
     "--socket=pulseaudio",
     "--device=dri",
-    "--talk-name=org.kde.StatusNotifierWatcher",
-    "--own-name=org.kde.StatusNotifierItem-*"
+    "--talk-name=org.kde.StatusNotifierWatcher"
   ],
   "modules": [
     {
