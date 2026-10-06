@@ -1,0 +1,56 @@
+name: Build Cmake
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            os: ubuntu-24.04
+          - arch: arm64
+            os: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            qt6-base-dev \
+            qt6-declarative-dev \
+            qt6-multimedia-dev \
+            libkf6coreaddons-dev \
+            libkf6i18n-dev \
+            libkf6kirigami-dev \
+            libkf6iconthemes-dev \
+            kf6-qqc2-desktop-style-dev \
+            libtag1-dev
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/AppDir -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Install
+        run: cmake --install build
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: musik-linux-${{ matrix.arch }}
+          path: ${{ github.workspace }}/AppDir

@@ -1,0 +1,53 @@
+name: Release Musik
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'input release tag (e.g., v1.0.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Archive builds
+        run: |
+          tar -czvf musik-linux-x86_64.tar.gz -C artifacts/musik-linux-x86_64 .
+          tar -czvf musik-linux-arm64.tar.gz -C artifacts/musik-linux-arm64 .
+
+      - name: Flatpak Builder
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: org.koderoots.musik.json
+          bundle: org.koderoots.musik.flatpak
+          cache: true
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          tag_name: ${{ github.event.inputs.version }} 
+          name: ${{ github.event.inputs.version || 'Draft Release' }}
+          files: |
+            musik-linux-x86_64.tar.gz
+            musik-linux-arm64.tar.gz
+            org.koderoots.musik.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
